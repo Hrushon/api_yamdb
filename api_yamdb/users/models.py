@@ -1,3 +1,4 @@
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -19,5 +20,11 @@ class User(AbstractUser):
         'Пользовательская роль',
         max_length=16,
         choices=CHOICES,
-        default='user'
+        default='user',
+    )
+    confirmation_code = models.UUIDField(
+        'Код для получения/обновления токена',
+        default=uuid.uuid4,
+        editable=False,
+        unique=True
     )
