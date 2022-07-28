@@ -1,12 +1,12 @@
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .permissions import SelfUserOnlyPermission
 from .models import User
+from .permissions import IsAdminOnlyPermission, SelfEditUserOnlyPermission
 from .serializers import UserSerializer, UserTokenSerializer
 
 
@@ -14,11 +14,11 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
-    permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminOnlyPermission,)
 
 
 class MeUserAPIView(APIView):
-    permission_classes = (SelfUserOnlyPermission,)
+    permission_classes = (SelfEditUserOnlyPermission,)
 
     def get(self, request):
         user = User.objects.get(id=1)
@@ -71,7 +71,9 @@ class TokenViewSet(viewsets.ViewSet):
         context = 'Проверьте confirmation_code'
         serializer = UserTokenSerializer(data=request.data)
         if serializer.is_valid():
-            user = get_object_or_404(User, username=request.data.get('username'))
+            user = get_object_or_404(
+                User, username=request.data.get('username')
+            )
             if str(user.confirmation_code) == request.data.get(
                 'confirmation_code'
             ):
