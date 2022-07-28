@@ -11,7 +11,6 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
-        extra_kwargs = {'email': {'required': True}}
 
 
 class UserMeSerializer(serializers.ModelSerializer):

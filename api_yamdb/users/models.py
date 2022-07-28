@@ -13,6 +13,10 @@ CHOICES = (
 class User(AbstractUser):
     """Кастомизирует пользовательский класс."""
 
+    email = models.EmailField(
+        'Адрес электронной почты',
+        unique=True
+    )
     bio = models.TextField(
         'Биография',
         blank=True,
