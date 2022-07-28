@@ -1,19 +1,21 @@
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
 from .permissions import IsAdminOnlyPermission, SelfEditUserOnlyPermission
-from .serializers import UserSerializer, UserTokenSerializer
+from .serializers import UserSerializer, UserMeSerializer, UserTokenSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
     permission_classes = (IsAdminOnlyPermission,)
 
 
@@ -27,7 +29,7 @@ class MeUserAPIView(APIView):
 
     def patch(self, request):
         user = User.objects.get(id=1)
-        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer = UserMeSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -35,6 +37,7 @@ class MeUserAPIView(APIView):
 
 
 class SignUpViewSet(viewsets.ViewSet):
+    permission_classes = (permissions.AllowAny,)
 
     def create(self, request):
         context = 'Запрещено использовать me в качестве username'
@@ -66,6 +69,7 @@ class SignUpViewSet(viewsets.ViewSet):
 
 
 class TokenViewSet(viewsets.ViewSet):
+    permission_classes = (permissions.AllowAny,)
 
     def create(self, request):
         context = 'Проверьте confirmation_code'
@@ -78,9 +82,9 @@ class TokenViewSet(viewsets.ViewSet):
                 'confirmation_code'
             ):
                 refresh = RefreshToken.for_user(user)
-                context = {'token': str(refresh.access_token)}
+                token = {'token': str(refresh.access_token)}
                 return Response(
-                    context, status=status.HTTP_200_OK
+                    token, status=status.HTTP_200_OK
                 )
             return Response(
                 context, status=status.HTTP_400_BAD_REQUEST

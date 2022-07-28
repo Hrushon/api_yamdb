@@ -11,6 +11,6 @@ router_v1.register('auth/signup', SignUpViewSet, basename='sign-up')
 router_v1.register('auth/token', TokenViewSet, basename='token')
 
 urlpatterns = [
-    path('v1/users/me/', MeUserAPIView.as_view()),
-    path('v1/', include(router_v1.urls)),
+    path('users/me', MeUserAPIView.as_view()),
+    path('', include(router_v1.urls)),
 ]
