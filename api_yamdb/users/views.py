@@ -7,7 +7,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
 from .permissions import IsAdminOnlyPermission, SelfEditUserOnlyPermission
-from .serializers import UserSerializer, UserMeSerializer, UserTokenSerializer
+from .serializers import (
+    UserSerializer,
+    UserMeSerializer,
+    UserSignUpSerializer,
+    UserTokenSerializer
+)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -23,12 +28,12 @@ class MeUserAPIView(APIView):
     permission_classes = (SelfEditUserOnlyPermission,)
 
     def get(self, request):
-        user = User.objects.get(id=1)
+        user = User.objects.get(username=request.user)
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
     def patch(self, request):
-        user = User.objects.get(id=1)
+        user = User.objects.get(username=request.user)
         serializer = UserMeSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -40,31 +45,30 @@ class SignUpViewSet(viewsets.ViewSet):
     permission_classes = (permissions.AllowAny,)
 
     def create(self, request):
-        context = 'Запрещено использовать me в качестве username'
-        if request.data.get('username') != 'me':
-            serializer = UserSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                username = request.data.get('username')
-                user = User.objects.get(username=username)
-                code = user.confirmation_code
-                send_mail(
-                    f'Wellcome in YaMDb, {user.username}!',
-                    (f'Скопируйте этот confirmation_code: {code} '
-                     f'для получения и последующего обновления токена '
-                     f'по адресу api/v1/auth/token/'),
-                    'yamdb@yandex.ru',
-                    [request.data.get('email')],
-                    fail_silently=False,
-                )
-                return Response(
-                    serializer.data, status=status.HTTP_200_OK
-                )
+        serializer = UserSignUpSerializer(data=request.data)
+        if (User.objects.filter(username=request.data.get('username'),
+                                email=request.data.get('email'))):
+            user = User.objects.get(username=request.data.get('username'))
+            serializer = UserSignUpSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            username = request.data.get('username')
+            user = User.objects.get(username=username)
+            code = user.confirmation_code
+            send_mail(
+                f'Wellcome in YaMDb, {user.username}!',
+                (f'Скопируйте этот confirmation_code: {code} '
+                 f'для получения и последующего обновления токена '
+                 f'по адресу api/v1/auth/token/'),
+                'yamdb@yandex.ru',
+                [request.data.get('email')],
+                fail_silently=False,
+            )
             return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                serializer.data, status=status.HTTP_200_OK
             )
         return Response(
-            context, status=status.HTTP_400_BAD_REQUEST
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST
         )
 
 
