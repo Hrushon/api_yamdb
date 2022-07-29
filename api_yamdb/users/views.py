@@ -1,8 +1,8 @@
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
@@ -23,16 +23,23 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
     permission_classes = (IsAdminOnlyPermission,)
 
+    def get_serializer_class(self):
+        if self.request.path[-4:] == '/me/':
+            return UserMeSerializer
+        return UserSerializer
 
-class MeUserAPIView(APIView):
-    permission_classes = (SelfEditUserOnlyPermission,)
+    def get_permissions(self):
+        if self.action == 'retrieve':
+            return (SelfEditUserOnlyPermission(),)
+        return super().get_permissions()
 
-    def get(self, request):
-        user = User.objects.get(username=request.user)
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
+    @action(methods=['get', 'patch'], detail=False, url_path='me')
+    def me_user(self, request):
+        if request.method == 'GET':
+            user = User.objects.get(username=request.user)
+            serializer = self.get_serializer(user)
+            return Response(serializer.data)
 
-    def patch(self, request):
         user = User.objects.get(username=request.user)
         serializer = UserMeSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
