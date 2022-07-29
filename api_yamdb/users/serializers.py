@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth.validators import UnicodeUsernameValidator
 
 from .models import User
 
@@ -44,9 +45,7 @@ class UserMeSerializer(serializers.ModelSerializer):
 
 
 class UserTokenSerializer(serializers.Serializer):
-
-    class Meta:
-        model = User
-        fields = (
-            'username', 'confirmation_code'
-        )
+    username = serializers.CharField(
+        max_length=150, validators=[UnicodeUsernameValidator, ]
+    )
+    confirmation_code = serializers.UUIDField()
