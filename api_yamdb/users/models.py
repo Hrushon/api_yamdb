@@ -33,3 +33,11 @@ class User(AbstractUser):
         editable=False,
         unique=True
     )
+
+    class Meta:
+        """
+        Сортирует пользователей и добавляет русские название в админке.
+        """
+        ordering = ('-id', )
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'

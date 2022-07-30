@@ -16,6 +16,11 @@ from .serializers import (
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """
+    Работает над всеми операциями с пользователями от лица админа.
+    Позволяет обычному пользователю редактировать свой профиль.
+    """
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'username'
@@ -29,7 +34,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return UserSerializer
 
     def get_permissions(self):
-        if self.action == 'retrieve':
+        if self.request.path[-4:] == '/me/':
             return (SelfEditUserOnlyPermission(),)
         return super().get_permissions()
 
@@ -49,6 +54,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class SignUpViewSet(viewsets.ViewSet):
+    """
+    Осуществляет регистрацию пользователей.
+    Отправляет confirmation_code на электронную почту пользователя
+    как при регистрации, так и при повторном валидном обращении.
+    А также в случае, если пользователя зарегистрировал администратор.
+    """
     permission_classes = (permissions.AllowAny,)
 
     def create(self, request):
@@ -80,6 +91,10 @@ class SignUpViewSet(viewsets.ViewSet):
 
 
 class TokenViewSet(viewsets.ViewSet):
+    """
+    Осуществляет выдачу зарегистрированному пользователю.
+    Обновляет истекший токен.
+    """
     permission_classes = (permissions.AllowAny,)
 
     def create(self, request):
