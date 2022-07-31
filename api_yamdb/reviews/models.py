@@ -1,5 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from users.models import User
 import sqlite3
 
 
@@ -52,7 +53,7 @@ class Review(models.Model):
         verbose_name="Автор"
     )
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE,
+        Titles, on_delete=models.CASCADE,
         related_name="reviews",
         verbose_name="Название произведения"
     )
