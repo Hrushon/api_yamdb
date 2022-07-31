@@ -4,6 +4,9 @@ from rest_framework import permissions
 class SelfEditUserOnlyPermission(permissions.BasePermission):
     """Обеспечивает доступ к users/me только самим user-ам."""
 
+    def has_permission(self, request, view):
+        return (request.user.is_authenticated)
+
     def has_object_permission(self, request, view, obj):
         return (obj.id == request.user)
 
@@ -42,6 +45,6 @@ class IsAdminOnlyPermission(permissions.BasePermission):
     """Обеспечивает доступ только aдмину."""
 
     def has_permission(self, request, view):
-        return (
-            request.user.role == 'admin' or request.user.is_superuser
-        )
+        if request.user.is_authenticated:
+            return (request.user.role == 'admin' or request.user.is_superuser)
+        return False

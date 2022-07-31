@@ -1,7 +1,12 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+<<<<<<< HEAD
 from users.models import User
 import sqlite3
+=======
+
+from users.models import User
+>>>>>>> ed2040466236dac99f633e7a595a839b39642b46
 
 
 class Categories(models.Model):
