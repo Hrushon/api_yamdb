@@ -1,12 +1,11 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from users.models import User
-import sqlite3
 
 
 class Categories(models.Model):
     name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -14,7 +13,7 @@ class Categories(models.Model):
 
 class Genres(models.Model):
     name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
@@ -23,9 +22,10 @@ class Genres(models.Model):
 class Titles(models.Model):
     name = models.CharField(max_length=256)
     year = models.IntegerField()
-    category = models.ForeignKey(Categories, related_name='titles', on_delete=models.PROTECT)
-    genres = models.ManyToManyField(Genres, through='GenresTitle')
-    description = models.TextField(null=True)
+    category = models.ForeignKey(Categories, related_name='titles',
+                                 on_delete=models.PROTECT)
+    genre = models.ManyToManyField(Genres, through='GenresTitle')
+    description = models.TextField(null=True, default='to describe')
 
     def get_genres(self):
         return list(self.genres.all())

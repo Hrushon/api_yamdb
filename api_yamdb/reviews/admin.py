@@ -1,10 +1,14 @@
 from django.contrib import admin
 
-from .models import Categories, Genres, Titles, GenresTitle
+from .models import Categories, Genres, GenresTitle, Review, Titles
 
 
 class CategoriesAdmin(admin.ModelAdmin):
     pass
+
+
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'text')
 
 
 class TitlesAdmin(admin.ModelAdmin):
@@ -15,3 +19,4 @@ admin.site.register(Categories, CategoriesAdmin)
 admin.site.register(Genres)
 admin.site.register(Titles, TitlesAdmin)
 admin.site.register(GenresTitle)
+admin.site.register(Review, ReviewAdmin)
