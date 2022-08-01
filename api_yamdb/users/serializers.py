@@ -1,5 +1,5 @@
-from rest_framework import serializers
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from rest_framework import serializers
 
 from .models import User
 
@@ -12,20 +12,40 @@ class UserSerializer(serializers.ModelSerializer):
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
 
+    def validate_username(self, value):
+        if (value == 'me'):
+            raise serializers.ValidationError(
+                'Запрещено использовать me в качестве username'
+            )
+        return value
+
+
+class UserSignUpSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+
+    def validate_username(self, value):
+        if (value == 'me'):
+            raise serializers.ValidationError(
+                'Запрещено использовать me в качестве username'
+            )
+        return value
+
 
 class UserMeSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role'
         )
-        extra_kwargs = {'email': {'required': True}}
+        read_only_fields = ('role',)
 
 
 class UserTokenSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=150, validators=[UnicodeUsernameValidator, ]
     )
-    confirmation_code = serializers.UUIDField()
+    confirmation_code = serializers.CharField()
