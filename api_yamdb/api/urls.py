@@ -16,4 +16,5 @@ router.register(
 
 urlpatterns = [
     path('v1/', include('users.urls')),
+    path('v1/', include(router.urls)),
 ]

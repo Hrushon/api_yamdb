@@ -1,12 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-<<<<<<< HEAD
 from users.models import User
 import sqlite3
-=======
-
-from users.models import User
->>>>>>> ed2040466236dac99f633e7a595a839b39642b46
 
 
 class Categories(models.Model):
@@ -54,7 +49,7 @@ class Review(models.Model):
     )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
-        related_name="author_review",
+        related_name="reviews",
         verbose_name="Автор"
     )
     title = models.ForeignKey(
@@ -97,12 +92,12 @@ class Comments(models.Model):
     )
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
-        related_name="author_comment",
+        related_name="comments",
         verbose_name="Автор комментария"
     )
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE,
-        related_name="review",
+        related_name="comments",
         verbose_name="Отзыв на произведение"
     )
 
