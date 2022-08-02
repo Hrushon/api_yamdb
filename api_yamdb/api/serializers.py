@@ -134,7 +134,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        field = '__all__'
+        fields = '__all__'
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -149,4 +149,4 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comments
-        field = '__all__'
+        fields = '__all__'
