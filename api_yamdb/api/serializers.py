@@ -29,16 +29,6 @@ class Categ2TitleSerializer(serializers.Field):
         return category
 
 
-class Genre2TitleSerializer(serializers.Field):
-    def to_internal_value(self, data):
-        obj = Genre.objects.filter(slug__in=data)
-        return obj
-
-    def to_representation(self, value):
-        value = value.values('name', 'slug')
-        return [item for item in value]
-
-
 class CategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -73,7 +63,11 @@ class TitlesGettingSerializer(serializers.ModelSerializer):
 
 class TitlesSerializer(serializers.ModelSerializer):
     """Сериалайзер на POST /titles/"""
-    genre = Genre2TitleSerializer()
+    genre = serializers.SlugRelatedField(
+        many=True,
+        slug_field='slug',
+        queryset=Genre.objects.all()
+    )
     category = Categ2TitleSerializer()
     rating = serializers.SerializerMethodField()
 
