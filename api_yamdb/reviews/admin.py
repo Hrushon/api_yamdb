@@ -12,7 +12,7 @@ class ReviewAdmin(admin.ModelAdmin):
 
 
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'year', 'category', 'genre')
+    list_display = ('pk', 'name', 'year', 'category')
 
 
 admin.site.register(Category, CategoryAdmin)
