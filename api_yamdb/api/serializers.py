@@ -13,13 +13,6 @@ from reviews.models import (
 )
 
 
-class GenreValidateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Genre
-        fields = ('name', 'slug')
-
-
 class Categ2TitleSerializer(serializers.Field):
     def to_internal_value(self, data):
         try:
