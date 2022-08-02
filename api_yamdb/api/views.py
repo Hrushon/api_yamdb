@@ -2,9 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import PageNumberPagination
 
-#from rest_framework.permissions import (IsAuthenticated,
-#                                        IsAuthenticatedOrReadOnly)
-from reviews.models import Categories, Genres, Review, Titles
+from reviews.models import Category, Genre, Review, Title
 from users.permissions import (
     IsAdminOrReadOnlyPermission,
     IsAuthorModeratorAdminOrReadOnlyPermission,
@@ -22,7 +20,7 @@ from .serializers import (
 
 class CategoriesViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                         mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Categories.objects.all()
+    queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
@@ -32,7 +30,7 @@ class CategoriesViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 class GenresViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                     mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Genres.objects.all()
+    queryset = Genre.objects.all()
     serializer_class = GenresSerializer
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
@@ -41,9 +39,10 @@ class GenresViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     serializer_class = TitlesGettingSerializer
     permission_classes = (IsAdminOrReadOnlyPermission,)
+    pagination_class = PageNumberPagination
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -76,7 +75,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
 
     def get_queryset(self):
-        title = get_object_or_404(Titles, pk=self.kwargs.get('title_id'))
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
         new_queryset = title.reviews.all()
         return new_queryset
 
