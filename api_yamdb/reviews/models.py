@@ -4,28 +4,44 @@ from django.db import models
 from users.models import User
 
 
-class Categories(models.Model):
+class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
 
+    class Meta:
+        """
+        Сортирует категории и добавляет русские названия в админке.
+        """
+        ordering = ('id', )
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
-class Genres(models.Model):
+
+class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.name
 
+    class Meta:
+        """
+        Сортирует жанры и добавляет русские названия в админке.
+        """
+        ordering = ('id', )
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
-class Titles(models.Model):
+
+class Title(models.Model):
     name = models.CharField(max_length=256)
     year = models.IntegerField()
-    category = models.ForeignKey(Categories, related_name='titles',
+    category = models.ForeignKey(Category, related_name='titles',
                                  on_delete=models.PROTECT)
-    genre = models.ManyToManyField(Genres, through='GenresTitle')
+    genre = models.ManyToManyField(Genre, through='GenreTitle')
     description = models.TextField(null=True, default='to describe')
 
     def get_genres(self):
@@ -34,10 +50,18 @@ class Titles(models.Model):
     def __str__(self):
         return f'{self.name} {self.genres}'
 
+    class Meta:
+        """
+        Сортирует произведения и добавляет русские названия в админке.
+        """
+        ordering = ('id', )
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
-class GenresTitle(models.Model):
-    genre = models.ForeignKey(Genres, on_delete=models.CASCADE)
-    title = models.ForeignKey(Titles, on_delete=models.CASCADE)
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'id {self.pk} жанр {self.genre}  title  {self.title}'
@@ -54,11 +78,11 @@ class Review(models.Model):
         verbose_name="Автор"
     )
     title = models.ForeignKey(
-        Titles, on_delete=models.CASCADE,
+        Title, on_delete=models.CASCADE,
         related_name="reviews",
         verbose_name="Название произведения"
     )
-    rating = models.SmallIntegerField(
+    score = models.SmallIntegerField(
         validators=[
             MaxValueValidator(10, 'Максимальная оценка - 10'),
             MinValueValidator(1, 'Минимальная оценка - 1')
@@ -71,18 +95,24 @@ class Review(models.Model):
         auto_now_add=True
     )
 
+    def __str__(self):
+        return self.text
+
     class Meta:
+        """
+        Сортирует, валидирует отзывы и добавляет русские названия в админке.
+        """
         constraints = [
             models.UniqueConstraint(
                 fields=['title', 'author'], name='unique_title_author'
             )
         ]
+        ordering = ('id', )
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
 
-    def __str__(self):
-        return self.text
 
-
-class Comments(models.Model):
+class Comment(models.Model):
     text = models.TextField(
         verbose_name="Текст комментария",
         help_text='Напишите свой комментарий'
@@ -98,9 +128,17 @@ class Comments(models.Model):
     )
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE,
-        related_name="review",
+        related_name="comments",
         verbose_name="Отзыв на произведение"
     )
 
     def __str__(self):
         return self.text
+
+    class Meta:
+        """
+        Сортирует комментарии и добавляет русские название в админке.
+        """
+        ordering = ('id', )
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'

@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import Categories, Genres, GenresTitle, Review, Titles
+from .models import Category, Genre, GenreTitle, Review, Title
 
 
-class CategoriesAdmin(admin.ModelAdmin):
+class CategoryAdmin(admin.ModelAdmin):
     pass
 
 
@@ -11,12 +11,12 @@ class ReviewAdmin(admin.ModelAdmin):
     list_display = ('pk', 'text')
 
 
-class TitlesAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'year', 'category', 'get_genres')
+class TitleAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'year', 'category', 'genre')
 
 
-admin.site.register(Categories, CategoriesAdmin)
-admin.site.register(Genres)
-admin.site.register(Titles, TitlesAdmin)
-admin.site.register(GenresTitle)
+admin.site.register(Category, CategoryAdmin)
+admin.site.register(Genre)
+admin.site.register(Title, TitleAdmin)
+admin.site.register(GenreTitle)
 admin.site.register(Review, ReviewAdmin)
