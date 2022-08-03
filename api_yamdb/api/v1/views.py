@@ -1,33 +1,23 @@
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from django_filters.rest_framework import DjangoFilterBackend
 
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 from .filters import TitleFilter
-from .permissions import (
-    IsAdminOnlyPermission,
-    IsAdminOrReadOnlyPermission,
-    IsAuthorModeratorAdminOrReadOnlyPermission,
-    SelfEditUserOnlyPermission,
-)
-from .serializers import (
-    CategoriesSerializer,
-    CommentSerializer,
-    GenresSerializer,
-    ReviewSerializer,
-    TitlesGettingSerializer,
-    TitlesSerializer,
-    UserSerializer,
-    UserMeSerializer,
-    UserSignUpSerializer,
-    UserTokenSerializer
-)
+from .permissions import (IsAdminOnlyPermission, IsAdminOrReadOnlyPermission,
+                          IsAuthorModeratorAdminOrReadOnlyPermission,
+                          SelfEditUserOnlyPermission)
+from .serializers import (CategoriesSerializer, CommentSerializer,
+                          GenresSerializer, ReviewSerializer,
+                          TitlesGettingSerializer, TitlesSerializer,
+                          UserMeSerializer, UserSerializer,
+                          UserSignUpSerializer, UserTokenSerializer)
 
 
 class ListCreateDestroyViewSet(
