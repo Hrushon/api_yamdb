@@ -1,9 +1,7 @@
-import datetime
-
-from django.db.models import Avg
-from django.forms import ValidationError
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
 from reviews.models import (
     Category,
     Comment,
@@ -11,6 +9,7 @@ from reviews.models import (
     Review,
     Title,
 )
+from users.models import User
 
 
 class Categ2TitleSerializer(serializers.Field):
@@ -44,52 +43,31 @@ class GenresSerializer(serializers.ModelSerializer):
 
 
 class TitlesGettingSerializer(serializers.ModelSerializer):
-    """Сериалайзер на GET /titles/ и /titles/id/"""
     genre = GenresSerializer(many=True, read_only=True)
     category = CategoriesSerializer()
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'rating',
                   'description', 'genre', 'category')
-
-    def get_rating(self, obj):
-        rating = obj.reviews.aggregate(rating=Avg('score'))
-        if (rating.get('rating')) is not None:
-            return round(rating.get('rating'), 0)
-        return rating.get('rating')
+        read_only_fields = ['__all__']
 
 
 class TitlesSerializer(serializers.ModelSerializer):
-    """Сериалайзер на POST /titles/"""
     genre = serializers.SlugRelatedField(
         many=True,
         slug_field='slug',
         queryset=Genre.objects.all()
     )
     category = Categ2TitleSerializer()
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-
-    def get_rating(self, obj):
-        rating = obj.reviews.aggregate(rating=Avg('score'))
-        if (rating.get('rating')) is not None:
-            return round(rating.get('rating'), 0)
-        return rating.get('rating')
-
-    def validate_year(self, value):
-        year = datetime.date.today().year
-        if (year < value):
-            raise serializers.ValidationError(
-                'Год не может быть меньше текущего года!'
-            )
-        return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -101,13 +79,6 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
-
-    def validate_score(self, value):
-        if 1 > value > 10:
-            raise ValidationError(
-                "Нужно указать оценку в диапазоне от 1 до 10"
-            )
-        return value
 
     def validate(self, data):
         title = get_object_or_404(
@@ -135,3 +106,50 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = '__all__'
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+
+    def validate_username(self, value):
+        if (value == 'me'):
+            raise serializers.ValidationError(
+                'Запрещено использовать me в качестве username'
+            )
+        return value
+
+
+class UserSignUpSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+
+    def validate_username(self, value):
+        if (value == 'me'):
+            raise serializers.ValidationError(
+                'Запрещено использовать me в качестве username'
+            )
+        return value
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
+        read_only_fields = ('role',)
+
+
+class UserTokenSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        max_length=150, validators=[UnicodeUsernameValidator, ]
+    )
+    confirmation_code = serializers.CharField()

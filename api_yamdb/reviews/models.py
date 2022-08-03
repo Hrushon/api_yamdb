@@ -2,14 +2,12 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from users.models import User
+from .validators import validate_year
 
 
 class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         """
@@ -19,13 +17,13 @@ class Category(models.Model):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
+    def __str__(self):
+        return self.name
+
 
 class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
-
-    def __str__(self):
-        return self.name
 
     class Meta:
         """
@@ -35,20 +33,17 @@ class Genre(models.Model):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
+    def __str__(self):
+        return self.name
+
 
 class Title(models.Model):
     name = models.CharField(max_length=256)
-    year = models.IntegerField()
+    year = models.IntegerField(validators=[validate_year])
     category = models.ForeignKey(Category, related_name='titles',
-                                 on_delete=models.PROTECT)
+                                 on_delete=models.SET_NULL, null=True)
     genre = models.ManyToManyField(Genre, through='GenreTitle')
-    description = models.TextField(null=True, default='to describe')
-
-    def get_genres(self):
-        return list(self.genres.all())
-
-    def __str__(self):
-        return f'{self.name} {self.genres}'
+    description = models.TextField(blank=True, default='to describe')
 
     class Meta:
         """
@@ -58,9 +53,12 @@ class Title(models.Model):
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
+    def __str__(self):
+        return f'{self.name} {self.genres}'
+
 
 class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    genre = models.ForeignKey(Genre, on_delete=models.SET_NULL, null=True)
     title = models.ForeignKey(Title, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -82,7 +80,7 @@ class Review(models.Model):
         related_name="reviews",
         verbose_name="Название произведения"
     )
-    score = models.SmallIntegerField(
+    score = models.PositiveSmallIntegerField(
         validators=[
             MaxValueValidator(10, 'Максимальная оценка - 10'),
             MinValueValidator(1, 'Минимальная оценка - 1')
@@ -94,9 +92,6 @@ class Review(models.Model):
         verbose_name="Дата оценки",
         auto_now_add=True
     )
-
-    def __str__(self):
-        return self.text
 
     class Meta:
         """
@@ -110,6 +105,9 @@ class Review(models.Model):
         ordering = ('id', )
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+
+    def __str__(self):
+        return self.text
 
 
 class Comment(models.Model):
@@ -132,9 +130,6 @@ class Comment(models.Model):
         verbose_name="Отзыв на произведение"
     )
 
-    def __str__(self):
-        return self.text
-
     class Meta:
         """
         Сортирует комментарии и добавляет русские название в админке.
@@ -142,3 +137,6 @@ class Comment(models.Model):
         ordering = ('id', )
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text
