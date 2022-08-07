@@ -5,22 +5,6 @@ from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
-class Categ2TitleSerializer(serializers.Field):
-    def to_internal_value(self, data):
-        try:
-            obj = Category.objects.get(slug=data)
-        except Exception:
-            raise serializers.ValidationError(f'Категория {data} отсутствует')
-        return obj
-
-    def to_representation(self, value):
-        category = {
-            "name": value.name,
-            "slug": value.slug
-        }
-        return category
-
-
 class CategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -53,7 +37,10 @@ class TitlesSerializer(serializers.ModelSerializer):
         slug_field='slug',
         queryset=Genre.objects.all()
     )
-    category = Categ2TitleSerializer()
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all()
+    )
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -61,6 +48,9 @@ class TitlesSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
+
+    def to_representation(self, value):
+        return TitlesGettingSerializer(value).data
 
 
 class ReviewSerializer(serializers.ModelSerializer):
